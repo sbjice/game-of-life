@@ -1,5 +1,5 @@
 class GameBoard {
-  constructor(rows = 160, cols = 160, density = 0.35) {
+  constructor(rows = 160, cols = 160, density = 0.45) {
     this.rows = rows;
     this.cols = cols;
     this.cellsNumber = this.rows * this.cols;
@@ -33,110 +33,62 @@ class GameBoard {
 
   topLeftCellIndex(idx) {
     const col = idx % this.cols;
-    const row = Math.floor(idx / (this.rows + 1));
-    if (col > 0) {
-      if (row > 0) {
-        return idx - this.cols - 1;
-      } else {
-        return this.cellsNumber + idx - 1 - this.cols;
-      }
-    } else {
-      if (row > 0) {
-        return idx - 1;
-      } else {
-        return this.cellsNumber - 1;
-      }
-    }
+    const row = Math.floor(idx / this.cols);
+    return col > 0 
+      ? row > 0 ? idx - this.cols - 1 : this.cellsNumber + idx - 1 - this.cols
+      : row > 0 ? idx - 1 : this.cellsNumber - 1;
   }
 
   topRightCellIndex(idx) {
     const col = idx % this.cols;
-    const row = Math.floor(idx / (this.rows + 1));
-    if (col > this.cols - 2) {
-      if (row < 1) {
-        return this.cellsNumber - col - 1;
-      } else {
-        return idx - this.cols - col;
-      }
-    } else {
-      if (row < 1) {
-        return this.cellsNumber - this.cols + col + 1;
-      } else {
-        return idx - this.cols + 1;
-      }
-    }
+    const row = Math.floor(idx / this.cols);
+    return col > this.cols - 2
+      ? row < 1 ? this.cellsNumber - col - 1 : idx - this.cols - col
+      : row < 1 ? this.cellsNumber - this.cols + col + 1 : idx - this.cols + 1;
   }
 
   btmLeftCellIndex(idx) {
     const col = idx % this.cols;
-    const row = Math.floor(idx / (this.rows + 1));
-    if (col > 0) {
-      if (row < this.rows - 1) {
-        return idx + this.cols - 1;
-      } else {
-        return col - 1;
-      }
-    } else {
-      if (row < this.rows - 1) {
-        return idx + 2 * this.cols - 1;
-      } else {
-        return this.cellsNumber - idx - 1;
-      }
-    }
+    const row = Math.floor(idx / this.cols);
+    return col > 0 
+      ? row < this.rows - 1 ? idx + this.cols - 1 : col - 1
+      : row < this.rows - 1 ? idx + 2 * this.cols - 1 : this.cellsNumber - idx - 1;
   }
 
   btmRightCellIndex(idx) {
     const col = idx % this.cols;
-    const row = Math.floor(idx / (this.rows + 1));
-    if (col < this.cols - 1) {
-      if (row < this.rows - 1) {
-        return idx + this.cols + 1;
-      } else {
-        return col + 1;
-      }
-    } else {
-      if (row < this.rows - 1) {
-        return idx + 1;
-      } else {
-        return 0;
-      }
-    }
+    const row = Math.floor(idx / this.cols);
+    return col < this.cols - 1
+      ? row < this.rows - 1 ? idx + this.cols + 1 : col + 1
+      : row < this.rows - 1 ? idx + 1 : 0;
   }
 
   topMiddleCellIndex(idx) {
-    const row = Math.floor(idx / (this.rows + 1));
-    if (row > 0) {
-      return idx - this.cols;
-    } else {
-      return this.cellsNumber - (this.cols - idx);
-    }
+    const row = Math.floor(idx / this.cols);
+    return row > 0 
+      ? idx - this.cols
+      : this.cellsNumber - (this.cols - idx);
   }
 
   btmMiddleCellIndex(idx) {
-    const row = Math.floor(idx / (this.rows + 1));
-    if (row < this.rows - 1) {
-      return idx + this.cols;
-    } else {
-      return idx % this.cols;
-    }
+    const row = Math.floor(idx / this.cols);
+    return row < this.rows - 1 
+      ? idx + this.cols
+      : idx % this.cols;
   }
 
   midLeftCellIndex(idx) {
     const col = idx % this.cols;
-    if (col > 0) {
-      return idx - 1;
-    } else {
-      return idx + this.cols - 1;
-    }
+    return col > 0
+      ? idx - 1 
+      : idx + this.cols - 1;
   }
 
   midRightCellIndex(idx) {
     const col = idx % this.cols;
-    if (col < this.cols - 1) {
-      return idx + 1;
-    } else {
-      return idx - this.cols + 1;
-    }
+    return col < this.cols - 1
+      ? idx + 1
+      : idx - this.cols + 1;
   }
 
   updateBoard() {
@@ -233,6 +185,9 @@ const createDomGrid = (board) => {
       const gridCell = document.createElement("div");
       gridCell.classList.add("grid-cell");
       gridCell.classList.add(board.boardString[i * cols + j] === board.aliveCell ? "grid-cell__alive" : "grid-cell__dead");
+      // const indexes = board.composeMapForIndex(i * cols + j);
+      // const ind = indexes.slice(0,3) + '\n' + indexes.slice(3, 6) + '\n' + indexes.slice(6, 9);
+      // gridCell.textContent = ind;
       gridRow.append(gridCell);
     }
     grid.append(gridRow);
@@ -289,7 +244,7 @@ button.addEventListener("click", (event) => {
 // }
 
 // board.boardString.split("").forEach((val, ind, arr) => {
-//   console.log(board.topLeftCellIndex(ind));
+//   console.log(board.btmLeftCellIndex(ind));
 // });
 
 // button.click();

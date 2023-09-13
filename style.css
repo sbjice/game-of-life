@@ -11,6 +11,8 @@
 }
 
 .grid-cell {
+  /* width: 65px;
+  height: 100px; */
   width: 5px;
   height: 5px;
   display: flex;
