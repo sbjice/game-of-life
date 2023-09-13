@@ -1,3 +1,7 @@
+button {
+  margin-bottom: 10px;
+}
+
 .grid {
   display: flex;
   flex-direction: column;

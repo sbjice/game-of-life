@@ -7,6 +7,8 @@ class GameBoard {
     this.aliveCell = ".";
     this.deadCell = " ";
     this.density = density;
+    this.cellsArray = [];
+    this.totalCellsAlive = 0;
     this.init();
   }
 
@@ -15,6 +17,18 @@ class GameBoard {
     for (let i = 0; i < this.cellsNumber; i += 1) {
       this.boardString +=
         Math.random() > this.density ? this.aliveCell : this.deadCell;
+    }
+    this.transformStringToArray();
+  }
+
+  transformStringToArray() {
+    this.cellsArray = [];
+    for (let i = 0; i < this.rows; i += 1) {
+      const row = [];
+      for (let j = 0; j < this.cols; j += 1) {
+        row.push(this.boardString[i * this.cols + j] === this.aliveCell ? 1 : 0);
+      }
+      this.cellsArray.push(row);
     }
   }
 
@@ -108,7 +122,6 @@ class GameBoard {
         ];
 
         const neighbors = this.countNeighbors(indexes, ind);
-
         //b3 / s23
         if (this.boardString[ind] === this.deadCell) {
           return neighbors === 3 ? this.aliveCell : this.deadCell; // b3 - ===3; b3+ - >=3
@@ -120,6 +133,8 @@ class GameBoard {
       })
       .join("");
     this.generations += 1;
+    this.countAliveCells();
+    this.transformStringToArray();
   }
 
   countNeighbors(arr, idx) {
@@ -130,6 +145,10 @@ class GameBoard {
       }
     }
     return neighbors;
+  }
+
+  countAliveCells() {
+    this.totalCellsAlive = this.boardString.split('').filter(char => char === this.aliveCell).length;
   }
 
   getMapForEachIndex() {
@@ -164,27 +183,38 @@ class GameBoard {
     ];
     return indexes;
   }
+
+  getDataObject() {
+    return {
+      rows: this.rows,
+      cols: this.cols,
+      generation: this.generation,
+      aliveCells: this.totalCellsAlive,
+      cellsArray: this.cellsArray,
+    }
+  }
 }
 
 
 const button = document.createElement("button");
 button.textContent = "Start/Pause";
-button.style.marginBottom = "10px";
 document.body.append(button);
+
 const board = new GameBoard();
 
 const createDomGrid = (board) => {
   const grid = document.createElement("div");
   grid.classList.add("grid");
-  const rows = board.rows;
-  const cols = board.cols;
+  const {rows, cols, cellsArray} = board.getDataObject();
   for (let i = 0; i < rows; i += 1) {
     const gridRow = document.createElement("div");
     gridRow.classList.add("grid-row");
     for (let j = 0; j < cols; j += 1) {
       const gridCell = document.createElement("div");
       gridCell.classList.add("grid-cell");
-      gridCell.classList.add(board.boardString[i * cols + j] === board.aliveCell ? "grid-cell__alive" : "grid-cell__dead");
+      gridCell.classList.add(cellsArray[i][j] === 1 ? "grid-cell__alive" : "grid-cell__dead");
+
+      // debug info
       // const indexes = board.composeMapForIndex(i * cols + j);
       // const ind = indexes.slice(0,3) + '\n' + indexes.slice(3, 6) + '\n' + indexes.slice(6, 9);
       // gridCell.textContent = ind;
@@ -196,16 +226,16 @@ const createDomGrid = (board) => {
 };
 
 const updateDomGrid = (board) => {
+  board.updateBoard();
   let grid = document.getElementsByClassName('grid');
   grid = grid[0];
-  const rows = board.rows;
-  const cols = board.cols;
+  const {rows, cols, cellsArray} = board.getDataObject();
   for (let i = 0; i < rows; i += 1) {
     const gridRow = grid.children[i];
     for (let j = 0; j < cols; j += 1) {
       const gridCell = gridRow.children[j];
       gridCell.classList.remove("grid-cell__alive", "grid-cell__dead");
-      gridCell.classList.add(board.boardString[i * cols + j] === board.aliveCell ? "grid-cell__alive" : "grid-cell__dead");
+      gridCell.classList.add(cellsArray[i][j] === 1 ? "grid-cell__alive" : "grid-cell__dead");
     }
   }
 };
@@ -229,9 +259,8 @@ button.addEventListener("click", (event) => {
     intId = 0;
   } else {
     intId = setInterval(() => {
-      board.updateBoard();
       updateDomGrid(board);
-      genText.textContent = "current generation: " + board.generations;
+      genText.textContent = "current generation: " + board.generations + ", alive cells: " + board.totalCellsAlive;
     }, 300);
   }
 });
